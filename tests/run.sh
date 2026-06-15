@@ -45,6 +45,7 @@ TEST_HOME="$TMP/home"; mkdir -p "$TEST_HOME"
 HOME="$TEST_HOME" "$ROOT/uni" --install >/dev/null
 [[ -x "$TEST_HOME/.local/bin/uni" ]] || fail "uni non installe"
 [[ -f "$TEST_HOME/.local/lib/uni/core.bash" ]] || fail "modules non installes"
+[[ -f "$TEST_HOME/.local/lib/uni/install-update-launcher.bash" ]] || fail "bibliotheque d'installation partagee non installee"
 [[ -f "$TEST_HOME/.local/share/bash-completion/completions/uni" ]] || fail "completion non installee"
 HOME="$TEST_HOME" "$TEST_HOME/.local/bin/uni" --help >/dev/null
 

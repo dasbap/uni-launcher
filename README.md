@@ -2,12 +2,16 @@
 
 `uni` est un lanceur Bash generique pour jeux natifs, scripts, AppImage, jeux lances par Wine et jeux emules. Il reprend l'organisation de `emu-launcher`, mais conserve sa propre bibliotheque dans `~/.config/uni`.
 
+L'installation et les mises a jour utilisent le paquet partage `install-update-launcher`, place dans un depot frere pendant le developpement. Une copie de la bibliotheque partagee est incluse dans l'installation de `uni`, qui reste ensuite autonome.
+
 ## Installation
 
 ```bash
 ./uni --install
 # ou: ./uni --install --system
 ```
+
+La bibliotheque peut aussi etre indiquee avec `INSTALL_UPDATE_LAUNCHER_LIB=/chemin/install-update-launcher.bash` ou installee separement.
 
 L'installation utilisateur place la commande dans `~/.local/bin/uni`, les modules dans `~/.local/lib/uni` et la completion Bash dans `~/.local/share/bash-completion/completions/uni`. Elle configure aussi `~/.profile` et `~/.bashrc` sans dupliquer les blocs geres.
 

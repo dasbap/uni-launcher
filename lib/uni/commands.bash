@@ -4,6 +4,8 @@ VERBOSE=false
 newargs=()
 passthrough=()
 
+source "$MODULE_DIR/installer.bash"
+
 parse_global_args() {
   local after_separator=false arg
   newargs=(); passthrough=()
@@ -17,74 +19,6 @@ parse_global_args() {
       *) newargs+=("$arg") ;;
     esac
   done
-}
-
-install_paths() {
-  if [[ "$1" == true ]]; then
-    printf '/usr/local/bin\n/usr/local/lib/uni\n/usr/local/share/bash-completion/completions\n'
-  else
-    printf '%s/.local/bin\n%s/.local/lib/uni\n%s/.local/share/bash-completion/completions\n' "$HOME" "$HOME" "$HOME"
-  fi
-}
-
-configure_shells() {
-  local completion="$HOME/.local/share/bash-completion/completions/uni"
-  touch "$HOME/.profile" "$HOME/.bashrc"
-  if ! grep -Fq '# >>> uni launcher PATH >>>' "$HOME/.profile"; then
-    cat >> "$HOME/.profile" <<'EOF'
-
-# >>> uni launcher PATH >>>
-case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH" ;; esac
-export PATH
-# <<< uni launcher PATH <<<
-EOF
-  fi
-  if ! grep -Fq '# >>> uni launcher >>>' "$HOME/.bashrc"; then
-    cat >> "$HOME/.bashrc" <<EOF
-
-# >>> uni launcher >>>
-case ":\$PATH:" in *":\$HOME/.local/bin:"*) ;; *) export PATH="\$HOME/.local/bin:\$PATH" ;; esac
-[[ -f "$completion" ]] && source "$completion"
-# <<< uni launcher <<<
-EOF
-  fi
-}
-
-install_uni() {
-  local system="$1" paths dest lib_dest completion_dest
-  paths="$(install_paths "$system")"; dest="${paths%%$'\n'*}"; paths="${paths#*$'\n'}"
-  lib_dest="${paths%%$'\n'*}"; completion_dest="${paths#*$'\n'}"
-  mkdir -p "$dest" "$lib_dest" "$completion_dest"
-  rm -f "$dest/uni" "$lib_dest"/*.bash
-  cp "$SCRIPT_DIR/uni" "$dest/uni"
-  cp "$MODULE_DIR"/*.bash "$lib_dest/"
-  cp "$SCRIPT_DIR/completions/uni.bash" "$completion_dest/uni"
-  chmod +x "$dest/uni"
-  [[ "$system" == true ]] || configure_shells
-  echo "uni installe dans $dest/uni"
-}
-
-hash_file() {
-  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | awk '{print $1}'; else shasum -a 256 "$1" | awk '{print $1}'; fi
-}
-
-copy_changed() {
-  local src="$1" dst="$2" label="$3"
-  if [[ -f "$dst" && "$(hash_file "$src")" == "$(hash_file "$dst")" ]]; then
-    echo "Inchange $label"; return 1
-  fi
-  cp "$src" "$dst"; echo "Mis a jour $label"
-}
-
-update_uni() {
-  local system="$1" paths dest lib_dest completion_dest module changed=false
-  paths="$(install_paths "$system")"; dest="${paths%%$'\n'*}"; paths="${paths#*$'\n'}"
-  lib_dest="${paths%%$'\n'*}"; completion_dest="${paths#*$'\n'}"
-  mkdir -p "$dest" "$lib_dest" "$completion_dest"
-  copy_changed "$SCRIPT_DIR/uni" "$dest/uni" "commande" && { chmod +x "$dest/uni"; changed=true; } || true
-  for module in "$MODULE_DIR"/*.bash; do copy_changed "$module" "$lib_dest/$(basename "$module")" "$(basename "$module")" && changed=true || true; done
-  copy_changed "$SCRIPT_DIR/completions/uni.bash" "$completion_dest/uni" "completion Bash" && changed=true || true
-  [[ "$changed" == true ]] || echo "uni est deja a jour"
 }
 
 list_library() {
