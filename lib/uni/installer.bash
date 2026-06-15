@@ -78,6 +78,7 @@ install_uni() {
 
 update_uni() {
   load_install_update_library
+  IUL_CONFIG_DIR_FALLBACK=uni
   iul_apply_from_git update "$1" "$UNI_REPOSITORY" "$UNI_REF" \
     uni-launcher uni uni lib/uni completions/uni.bash
 }
@@ -87,10 +88,12 @@ manage_launcher_package() {
   load_install_update_library
   case "$package" in
     emu)
+      IUL_CONFIG_DIR_FALLBACK=emu
       iul_apply_from_git "$action" "$system" "$EMU_REPOSITORY" "$EMU_REF" \
         emu-launcher emu emu lib/emu completions/emu.bash
       ;;
     installer)
+      IUL_CONFIG_DIR_FALLBACK=""
       iul_apply_from_git "$action" "$system" "$INSTALL_UPDATE_REPOSITORY" "$INSTALL_UPDATE_REF" \
         install-update-launcher install-update-launcher install-update-launcher \
         lib/install-update-launcher ""

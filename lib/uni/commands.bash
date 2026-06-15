@@ -150,17 +150,19 @@ handle_package_operation() {
 
   declare -F iul_prepare_config_transition >/dev/null 2>&1 && modern_updater=true
   if [[ "$action" == install || "$modern_updater" == false ]]; then
-    manage_launcher_package "$action" installer "$system"
+    manage_launcher_package "$action" installer "$system" || return $?
     [[ "$modern_updater" == true ]] || reload_installed_update_library "$system"
   fi
   if [[ "$action" == install ]]; then
-    install_uni "$system"
+    install_uni "$system" || return $?
   else
-    update_uni "$system"
+    update_uni "$system" || return $?
   fi
-  [[ "$with_emu" == false ]] || manage_launcher_package "$action" emu "$system"
+  if [[ "$with_emu" == true ]]; then
+    manage_launcher_package "$action" emu "$system" || return $?
+  fi
   if [[ "$action" == update && "$modern_updater" == true ]]; then
-    manage_launcher_package update installer "$system"
+    manage_launcher_package update installer "$system" || return $?
   fi
   cleanup_installer_checkout
 }
