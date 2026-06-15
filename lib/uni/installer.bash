@@ -94,6 +94,23 @@ manage_launcher_package() {
   esac
 }
 
+launcher_package_status() {
+  local package="$1" system="$2"
+  load_install_update_library
+  case "$package" in
+    emu)
+      iul_package_status_from_git "$system" "$EMU_REPOSITORY" "$EMU_REF" \
+        emu-launcher emu emu lib/emu completions/emu.bash
+      ;;
+    installer)
+      iul_package_status_from_git "$system" "$INSTALL_UPDATE_REPOSITORY" "$INSTALL_UPDATE_REF" \
+        install-update-launcher install-update-launcher install-update-launcher \
+        lib/install-update-launcher ""
+      ;;
+    *) printf 'unavailable\n' ;;
+  esac
+}
+
 cleanup_installer_checkout() {
   [[ -z "$INSTALL_UPDATE_CHECKOUT" ]] || rm -rf "$INSTALL_UPDATE_CHECKOUT"
 }

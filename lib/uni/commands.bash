@@ -72,6 +72,7 @@ handle_command() {
     --set-emu)
       [[ -n "${2:-}" ]] || die "Usage: uni --set-emu <command>"
       cfg_set "$RUNNERS_CONFIG" emu "$2"; echo "Runner emu configure -> $2"; exit 0 ;;
+    launchers) list_available_launchers "${@:2}"; exit 0 ;;
     doctor) doctor; exit $? ;;
     --install|-i) handle_package_operation install "${@:2}"; exit 0 ;;
     --update) handle_package_operation update "${@:2}"; exit 0 ;;
@@ -79,6 +80,48 @@ handle_command() {
       backup="$CONFIG_DIR/backup.$(date +%s)"; mkdir -p "$backup"; cp "$RUNNERS_CONFIG" "$GAMES_CONFIG" "$backup/"; rm -f "$RUNNERS_CONFIG" "$GAMES_CONFIG"
       echo "Configuration sauvegardee dans $backup puis supprimee"; exit 0 ;;
   esac
+}
+
+launcher_status_matches() {
+  local status="$1" filter_installed="$2" filter_missing="$3" filter_current="$4" filter_updates="$5"
+  if [[ "$filter_installed" == false && "$filter_missing" == false && \
+        "$filter_current" == false && "$filter_updates" == false ]]; then
+    return 0
+  fi
+  [[ "$filter_installed" == true && "$status" != not-installed && "$status" != unavailable ]] && return 0
+  [[ "$filter_missing" == true && "$status" == not-installed ]] && return 0
+  [[ "$filter_current" == true && "$status" == up-to-date ]] && return 0
+  [[ "$filter_updates" == true && "$status" == update-available ]] && return 0
+  return 1
+}
+
+list_available_launchers() {
+  local system=false channel="$UNI_CHANNEL" ref="$UNI_REF" option status
+  local filter_installed=false filter_missing=false filter_current=false filter_updates=false
+  while [[ $# -gt 0 ]]; do
+    option="$1"; shift
+    case "$option" in
+      --system) system=true ;;
+      --channel) [[ $# -gt 0 ]] || die "--channel requires a value" 2; channel="$1"; shift ;;
+      --ref) [[ $# -gt 0 ]] || die "--ref requires a value" 2; ref="$1"; shift ;;
+      --installed) filter_installed=true ;;
+      --missing) filter_missing=true ;;
+      --current) filter_current=true ;;
+      --updates) filter_updates=true ;;
+      *) die "unknown launchers option: $option" 2 ;;
+    esac
+  done
+  configure_deployment_refs "$channel" "$ref"
+  printf 'Available launchers (channel: %s, ref: %s)\n' "$channel" "$UNI_REF"
+  printf '%-26s %-18s %s\n' NAME STATUS REPOSITORY
+
+  status="$(launcher_package_status emu "$system")"
+  launcher_status_matches "$status" "$filter_installed" "$filter_missing" "$filter_current" "$filter_updates" && \
+    printf '%-26s %-18s %s\n' emu "$status" "$EMU_REPOSITORY"
+  status="$(launcher_package_status installer "$system")"
+  launcher_status_matches "$status" "$filter_installed" "$filter_missing" "$filter_current" "$filter_updates" && \
+    printf '%-26s %-18s %s\n' install-update-launcher "$status" "$INSTALL_UPDATE_REPOSITORY"
+  cleanup_installer_checkout
 }
 
 handle_package_operation() {

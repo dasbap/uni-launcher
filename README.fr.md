@@ -8,6 +8,26 @@ L'installation et les mises à jour utilisent le paquet partagé `install-update
 
 `uni` est le seul projet qui orchestre les autres paquets launcher. `emu-launcher` et `install-update-launcher` n'installent jamais `uni`.
 
+## Launchers disponibles
+
+Inspectez tous les paquets launcher gérés par `uni` sur le canal de déploiement sélectionné :
+
+```bash
+uni launchers
+uni launchers --channel prerelease
+```
+
+La commande affiche `not-installed`, `up-to-date`, `update-available` ou `unavailable`. Filtrez le registre selon le statut :
+
+```bash
+uni launchers --installed
+uni launchers --missing
+uni launchers --current
+uni launchers --updates
+```
+
+`--installed` inclut les paquets à jour et ceux pour lesquels une mise à jour est disponible. Utilisez `--system` pour inspecter `/usr/local` au lieu de l'installation utilisateur. Installez les paquets manquants avec `uni --install --all` ou sélectionnez-les avec `--with-emu` et `--with-installer`; mettez à jour les paquets installés avec les options correspondantes de `uni --update`.
+
 ## Installation
 
 ```bash
@@ -95,6 +115,9 @@ uni --link <runner> <game>
 uni --unlink <game>
 uni --remove-game <game>
 uni --set-emu <command>
+uni launchers
+uni launchers --missing
+uni launchers --updates
 uni doctor
 uni --dry-run <game>
 uni --foreground <game>

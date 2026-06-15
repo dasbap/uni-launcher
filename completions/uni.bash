@@ -7,6 +7,6 @@ _uni() {
     --add-runner|--remove-runner|--link) COMPREPLY=( $(compgen -W "$runners" -- "$cur") ); return ;;
     --add-game|--add-emu-game|--set-emu) COMPREPLY=( $(compgen -f -- "$cur") ); return ;;
   esac
-  COMPREPLY=( $(compgen -W "--help --list --foreground --dry-run --verbose --add-runner --remove-runner --add-game --add-emu-game --link --unlink --remove-game --set-emu doctor --install --update --system --channel --ref stable prerelease development --with-installer --with-emu --all --clear-config $runners $games" -- "$cur") )
+  COMPREPLY=( $(compgen -W "--help --list --foreground --dry-run --verbose --add-runner --remove-runner --add-game --add-emu-game --link --unlink --remove-game --set-emu launchers doctor --install --update --system --channel --ref stable prerelease development --installed --missing --current --updates --with-installer --with-emu --all --clear-config $runners $games" -- "$cur") )
 }
 complete -F _uni uni

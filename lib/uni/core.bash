@@ -24,6 +24,8 @@ Usage:
   uni --remove-game <game-name>
   uni --set-emu <command>
   uni doctor
+  uni launchers [--system] [--channel stable|prerelease|development] [--ref git-ref]
+                [--installed|--missing|--current|--updates]
   uni --install [--system] [--channel stable|prerelease|development] [--ref git-ref] [--with-installer] [--with-emu] [--all] | -i
   uni --update [--system] [--channel stable|prerelease|development] [--ref git-ref] [--with-installer] [--with-emu] [--all]
   uni --clear-config

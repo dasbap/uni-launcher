@@ -8,6 +8,26 @@ Installation and updates use the shared `install-update-launcher` package. Durin
 
 `uni` is the only project that orchestrates other launcher packages. `emu-launcher` and `install-update-launcher` never install `uni`.
 
+## Available launchers
+
+Inspect every launcher package managed by `uni` on the selected deployment channel:
+
+```bash
+uni launchers
+uni launchers --channel prerelease
+```
+
+The command reports `not-installed`, `up-to-date`, `update-available`, or `unavailable`. Filter the registry by status:
+
+```bash
+uni launchers --installed
+uni launchers --missing
+uni launchers --current
+uni launchers --updates
+```
+
+`--installed` includes both current packages and packages with an available update. Use `--system` to inspect `/usr/local` instead of the user installation. Install missing packages with `uni --install --all` or selected packages with `--with-emu` and `--with-installer`; update installed packages with the matching `uni --update` options.
+
 ## Installation
 
 ```bash
@@ -95,6 +115,9 @@ uni --link <runner> <game>
 uni --unlink <game>
 uni --remove-game <game>
 uni --set-emu <command>
+uni launchers
+uni launchers --missing
+uni launchers --updates
 uni doctor
 uni --dry-run <game>
 uni --foreground <game>

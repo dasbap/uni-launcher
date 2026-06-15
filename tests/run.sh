@@ -92,6 +92,14 @@ create_remote "$INSTALLER_REMOTE"
 
 REMOTE_HOME="$TMP/remote-home"; mkdir -p "$REMOTE_HOME"
 HOME="$REMOTE_HOME" "$ROOT/uni" --install >/dev/null
+missing_output="$(HOME="$REMOTE_HOME" \
+  UNI_REPOSITORY="file://$UNI_REMOTE" \
+  EMU_REPOSITORY="file://$EMU_REMOTE" \
+  INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
+  "$REMOTE_HOME/.local/bin/uni" launchers --channel prerelease --missing)"
+assert_contains "$missing_output" "emu"
+assert_contains "$missing_output" "install-update-launcher"
+assert_contains "$missing_output" "not-installed"
 HOME="$REMOTE_HOME" \
 UNI_REPOSITORY="file://$UNI_REMOTE" \
 EMU_REPOSITORY="file://$EMU_REMOTE" \
@@ -100,5 +108,23 @@ INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
 [[ -x "$REMOTE_HOME/.local/bin/uni" ]] || fail "uni remote update failed"
 [[ -x "$REMOTE_HOME/.local/bin/emu" ]] || fail "emu was not managed by uni --all"
 [[ -x "$REMOTE_HOME/.local/bin/install-update-launcher" ]] || fail "installer was not managed by uni --all"
+current_output="$(HOME="$REMOTE_HOME" \
+  UNI_REPOSITORY="file://$UNI_REMOTE" \
+  EMU_REPOSITORY="file://$EMU_REMOTE" \
+  INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
+  "$REMOTE_HOME/.local/bin/uni" launchers --channel prerelease --current)"
+assert_contains "$current_output" "emu"
+assert_contains "$current_output" "install-update-launcher"
+assert_contains "$current_output" "up-to-date"
+
+printf '\nlocal-change\n' >> "$REMOTE_HOME/.local/bin/emu"
+updates_output="$(HOME="$REMOTE_HOME" \
+  UNI_REPOSITORY="file://$UNI_REMOTE" \
+  EMU_REPOSITORY="file://$EMU_REMOTE" \
+  INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
+  "$REMOTE_HOME/.local/bin/uni" launchers --channel prerelease --updates)"
+assert_contains "$updates_output" "emu"
+assert_contains "$updates_output" "update-available"
+[[ "$updates_output" != *"install-update-launcher"* ]] || fail "updates filter included a current package"
 
 echo "All tests passed."
