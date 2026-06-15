@@ -24,13 +24,24 @@ L'installation utilisateur place la commande dans `~/.local/bin/uni`, les module
 
 `--with-emu` télécharge et installe `https://github.com/dasbap/emu-launcher.git`. `--with-installer` installe la commande autonome `install-update-launcher`. `--all` active les deux options. Ajoutez `--system` pour utiliser les destinations sous `/usr/local`.
 
-Les mises à jour téléchargent les projets sélectionnés depuis leur branche `main` au lieu d'utiliser les fichiers du checkout courant :
+Les mises à jour téléchargent les projets sélectionnés depuis le canal de déploiement choisi au lieu d'utiliser les fichiers du checkout courant :
 
 ```bash
 uni --update
 uni --update --with-emu
 uni --update --all
 ```
+
+Sélectionnez le même canal de déploiement pour `uni` et tous les paquets choisis :
+
+```bash
+uni --update --channel stable --all
+uni --update --channel prerelease --all
+uni --update --channel development --all
+uni --update --ref v1.2.0 --all
+```
+
+Les canaux correspondent aux branches `release`, `pre-release` et `main`. Le canal par défaut est `stable`; `--ref` remplace le canal. Pendant l'installation, `uni` est copié depuis le checkout courant, tandis que `--channel` sélectionne la branche des paquets téléchargés avec `--with-emu`, `--with-installer` ou `--all`.
 
 Les dépôts et branches peuvent être remplacés avec `UNI_REPOSITORY`, `UNI_REF`, `EMU_REPOSITORY`, `EMU_REF`, `INSTALL_UPDATE_REPOSITORY` et `INSTALL_UPDATE_REF`.
 
@@ -91,6 +102,8 @@ uni --update
 uni --update --with-emu
 uni --update --with-installer
 uni --update --all
+uni --update --channel stable --all
+uni --update --ref v1.2.0 --all
 ```
 
 ## Tests

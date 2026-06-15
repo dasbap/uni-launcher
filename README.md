@@ -24,13 +24,24 @@ The user installation places the command in `~/.local/bin/uni`, modules in `~/.l
 
 `--with-emu` downloads and installs `https://github.com/dasbap/emu-launcher.git`. `--with-installer` installs the standalone `install-update-launcher` command. `--all` enables both options. Add `--system` to use `/usr/local` destinations.
 
-Updates download the selected projects from their `main` branches instead of using files from the current checkout:
+Updates download the selected projects from the chosen deployment channel instead of using files from the current checkout:
 
 ```bash
 uni --update
 uni --update --with-emu
 uni --update --all
 ```
+
+Choose the same deployment channel for `uni` and every selected package:
+
+```bash
+uni --update --channel stable --all
+uni --update --channel prerelease --all
+uni --update --channel development --all
+uni --update --ref v1.2.0 --all
+```
+
+Channels map to `release`, `pre-release`, and `main`. The default is `stable`; `--ref` overrides the channel. During installation, `uni` itself is copied from the current checkout, while `--channel` selects the branch used for packages downloaded through `--with-emu`, `--with-installer`, or `--all`.
 
 Override repositories or branches with `UNI_REPOSITORY`, `UNI_REF`, `EMU_REPOSITORY`, `EMU_REF`, `INSTALL_UPDATE_REPOSITORY`, and `INSTALL_UPDATE_REF`.
 
@@ -91,6 +102,8 @@ uni --update
 uni --update --with-emu
 uni --update --with-installer
 uni --update --all
+uni --update --channel stable --all
+uni --update --ref v1.2.0 --all
 ```
 
 ## Tests

@@ -12,11 +12,12 @@ find_install_update_library() {
 }
 
 UNI_REPOSITORY="${UNI_REPOSITORY:-https://github.com/dasbap/uni-launcher.git}"
-UNI_REF="${UNI_REF:-main}"
+UNI_CHANNEL="${UNI_CHANNEL:-stable}"
+UNI_REF="${UNI_REF:-}"
 EMU_REPOSITORY="${EMU_REPOSITORY:-https://github.com/dasbap/emu-launcher.git}"
-EMU_REF="${EMU_REF:-main}"
+EMU_REF="${EMU_REF:-}"
 INSTALL_UPDATE_REPOSITORY="${INSTALL_UPDATE_REPOSITORY:-https://github.com/dasbap/install-update-launcher.git}"
-INSTALL_UPDATE_REF="${INSTALL_UPDATE_REF:-main}"
+INSTALL_UPDATE_REF="${INSTALL_UPDATE_REF:-}"
 INSTALL_UPDATE_CHECKOUT=""
 
 load_install_update_library() {
@@ -31,6 +32,23 @@ load_install_update_library() {
     "$INSTALL_UPDATE_REPOSITORY" "$INSTALL_UPDATE_CHECKOUT" || \
     die "unable to download install-update-launcher" 1
   source "$INSTALL_UPDATE_CHECKOUT/lib/install-update-launcher/install-update-launcher.bash"
+}
+
+deployment_channel_ref() {
+  case "$1" in
+    stable) printf 'release\n' ;;
+    prerelease) printf 'pre-release\n' ;;
+    development) printf 'main\n' ;;
+    *) die "unknown deployment channel: $1" 2 ;;
+  esac
+}
+
+configure_deployment_refs() {
+  local channel="$1" ref="$2"
+  [[ -n "$ref" ]] || ref="$(deployment_channel_ref "$channel")"
+  UNI_REF="$ref"
+  [[ -n "$EMU_REF" ]] || EMU_REF="$ref"
+  [[ -n "$INSTALL_UPDATE_REF" ]] || INSTALL_UPDATE_REF="$ref"
 }
 
 configure_installer_manifest() {

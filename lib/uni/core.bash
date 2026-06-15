@@ -24,8 +24,8 @@ Usage:
   uni --remove-game <game-name>
   uni --set-emu <command>
   uni doctor
-  uni --install [--system] [--with-installer] [--with-emu] [--all] | -i
-  uni --update [--system] [--with-installer] [--with-emu] [--all]
+  uni --install [--system] [--channel stable|prerelease|development] [--ref git-ref] [--with-installer] [--with-emu] [--all] | -i
+  uni --update [--system] [--channel stable|prerelease|development] [--ref git-ref] [--with-installer] [--with-emu] [--all]
   uni --clear-config
 
 Les arguments places apres -- sont transmis sans modification.

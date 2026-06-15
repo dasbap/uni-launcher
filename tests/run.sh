@@ -57,6 +57,8 @@ create_remote() {
   git -C "$directory" add -A
   git -C "$directory" commit -qm initial
   git -C "$directory" branch -M main
+  git -C "$directory" branch release
+  git -C "$directory" branch pre-release
 }
 
 UNI_REMOTE="$TMP/uni-remote"
@@ -94,7 +96,7 @@ HOME="$REMOTE_HOME" \
 UNI_REPOSITORY="file://$UNI_REMOTE" \
 EMU_REPOSITORY="file://$EMU_REMOTE" \
 INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
-  "$REMOTE_HOME/.local/bin/uni" --update --all >/dev/null
+  "$REMOTE_HOME/.local/bin/uni" --update --channel prerelease --all >/dev/null
 [[ -x "$REMOTE_HOME/.local/bin/uni" ]] || fail "uni remote update failed"
 [[ -x "$REMOTE_HOME/.local/bin/emu" ]] || fail "emu was not managed by uni --all"
 [[ -x "$REMOTE_HOME/.local/bin/install-update-launcher" ]] || fail "installer was not managed by uni --all"
