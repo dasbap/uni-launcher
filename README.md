@@ -45,12 +45,11 @@ Every `uni --install` automatically installs the standalone `install-update-laun
 
 `--with-emu` additionally downloads and installs `https://github.com/dasbap/emu-launcher.git`. `--all` installs every optional launcher currently registered by `uni`. Add `--system` to use `/usr/local` destinations. The older `--with-installer` option remains accepted for compatibility but is no longer required.
 
-Updates download the selected projects from the chosen deployment channel instead of using files from the current checkout:
+`uni --update` and `uni -u` update every registered package by default: `install-update-launcher`, `uni`, and optional launchers such as `emu`. The default channel is `stable`; unchanged packages are left untouched after SHA-256 comparison.
 
 ```bash
 uni --update
-uni --update --with-emu
-uni --update --all
+uni -u
 ```
 
 Choose the same deployment channel for `uni` and every selected package:
@@ -62,7 +61,23 @@ uni --update --channel development --all
 uni --update --ref v1.2.0 --all
 ```
 
-Channels map to `release`, `pre-release`, and `main`. The default is `stable`; `--ref` overrides the channel. During installation, `uni` itself is copied from the current checkout, while `--channel` selects the branch used for `install-update-launcher` and packages downloaded through `--with-emu` or `--all`.
+Channels map to `release`, `pre-release`, and `main`. `--ref` overrides the channel and can select an older tag or branch for every managed package.
+
+## Configuration compatibility
+
+Each package provides `deploy/manifest` with its application version, configuration schema, and compatible schema range. Installed state is stored under `~/.local/state/launcher-tools/packages`.
+
+When an update or downgrade changes the configuration schema, the updater automatically creates a persistent backup under `~/.local/state/launcher-tools/backups/<command>/`. Backups are not deleted when switching versions, so they remain available until a compatible version is installed again.
+
+If the target cannot read the current schema, the update stops after creating the backup. Available choices are:
+
+```bash
+uni -u --ref v1.0.0                 # select another compatible version
+uni -u --ref v2.0.0 --merge-config  # use deploy/migrate-config when provided
+uni -u --ref v1.0.0 --force-config  # bypass the guard after manual review
+```
+
+`--merge-config` only works when the target package provides an executable `deploy/migrate-config` hook. `--force-config` changes the binaries without converting the configuration and should be treated as a recovery option.
 
 Override repositories or branches with `UNI_REPOSITORY`, `UNI_REF`, `EMU_REPOSITORY`, `EMU_REF`, `INSTALL_UPDATE_REPOSITORY`, and `INSTALL_UPDATE_REF`.
 
@@ -123,8 +138,9 @@ uni doctor
 uni --dry-run <game>
 uni --foreground <game>
 uni --update
-uni --update --with-emu
+uni -u
 uni --update --all
+uni -u --merge-config
 uni --update --channel stable --all
 uni --update --ref v1.2.0 --all
 ```

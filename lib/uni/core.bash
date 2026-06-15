@@ -27,7 +27,8 @@ Usage:
   uni launchers [--system] [--channel stable|prerelease|development] [--ref git-ref]
                 [--installed|--missing|--current|--updates]
   uni --install [--system] [--channel stable|prerelease|development] [--ref git-ref] [--with-emu] [--all] | -i
-  uni --update [--system] [--channel stable|prerelease|development] [--ref git-ref] [--with-emu] [--all]
+  uni --update|-u [--system] [--channel stable|prerelease|development] [--ref git-ref]
+                  [--merge-config] [--force-config]
   uni --clear-config
 
 Les arguments places apres -- sont transmis sans modification.

@@ -45,12 +45,11 @@ Chaque `uni --install` installe d'abord automatiquement la commande autonome `in
 
 `--with-emu` télécharge et installe également `https://github.com/dasbap/emu-launcher.git`. `--all` installe tous les launchers optionnels actuellement enregistrés par `uni`. Ajoutez `--system` pour utiliser les destinations sous `/usr/local`. L'ancienne option `--with-installer` reste acceptée pour compatibilité mais n'est plus nécessaire.
 
-Les mises à jour téléchargent les projets sélectionnés depuis le canal de déploiement choisi au lieu d'utiliser les fichiers du checkout courant :
+`uni --update` et `uni -u` mettent à jour par défaut tous les paquets enregistrés : `install-update-launcher`, `uni` et les launchers optionnels comme `emu`. Le canal par défaut est `stable`; les paquets inchangés ne sont pas recopiés après comparaison SHA-256.
 
 ```bash
 uni --update
-uni --update --with-emu
-uni --update --all
+uni -u
 ```
 
 Sélectionnez le même canal de déploiement pour `uni` et tous les paquets choisis :
@@ -62,7 +61,23 @@ uni --update --channel development --all
 uni --update --ref v1.2.0 --all
 ```
 
-Les canaux correspondent aux branches `release`, `pre-release` et `main`. Le canal par défaut est `stable`; `--ref` remplace le canal. Pendant l'installation, `uni` est copié depuis le checkout courant, tandis que `--channel` sélectionne la branche d'`install-update-launcher` et des paquets téléchargés avec `--with-emu` ou `--all`.
+Les canaux correspondent aux branches `release`, `pre-release` et `main`. `--ref` remplace le canal et peut sélectionner une ancienne branche ou un ancien tag pour tous les paquets gérés.
+
+## Compatibilité des configurations
+
+Chaque paquet fournit `deploy/manifest` avec sa version applicative, son schéma de configuration et la plage de schémas compatibles. L'état installé est conservé dans `~/.local/state/launcher-tools/packages`.
+
+Lorsqu'une mise à jour ou un retour en arrière change le schéma de configuration, l'updater crée automatiquement une sauvegarde persistante dans `~/.local/state/launcher-tools/backups/<command>/`. Les sauvegardes ne sont pas supprimées lors des changements de version et restent disponibles jusqu'au retour vers une version compatible.
+
+Si la cible ne sait pas lire le schéma actuel, la mise à jour s'arrête après la sauvegarde. Les choix disponibles sont :
+
+```bash
+uni -u --ref v1.0.0                 # sélectionner une autre version compatible
+uni -u --ref v2.0.0 --merge-config  # utiliser deploy/migrate-config si disponible
+uni -u --ref v1.0.0 --force-config  # ignorer la protection après vérification
+```
+
+`--merge-config` fonctionne uniquement lorsque le paquet cible fournit un hook exécutable `deploy/migrate-config`. `--force-config` remplace les binaires sans convertir la configuration et doit rester une option de récupération.
 
 Les dépôts et branches peuvent être remplacés avec `UNI_REPOSITORY`, `UNI_REF`, `EMU_REPOSITORY`, `EMU_REF`, `INSTALL_UPDATE_REPOSITORY` et `INSTALL_UPDATE_REF`.
 
@@ -123,8 +138,9 @@ uni doctor
 uni --dry-run <game>
 uni --foreground <game>
 uni --update
-uni --update --with-emu
+uni -u
 uni --update --all
+uni -u --merge-config
 uni --update --channel stable --all
 uni --update --ref v1.2.0 --all
 ```

@@ -75,7 +75,7 @@ handle_command() {
     launchers) list_available_launchers "${@:2}"; exit 0 ;;
     doctor) doctor; exit $? ;;
     --install|-i) handle_package_operation install "${@:2}"; exit 0 ;;
-    --update) handle_package_operation update "${@:2}"; exit 0 ;;
+    --update|-u) handle_package_operation update "${@:2}"; exit 0 ;;
     --clear-config)
       backup="$CONFIG_DIR/backup.$(date +%s)"; mkdir -p "$backup"; cp "$RUNNERS_CONFIG" "$GAMES_CONFIG" "$backup/"; rm -f "$RUNNERS_CONFIG" "$GAMES_CONFIG"
       echo "Configuration sauvegardee dans $backup puis supprimee"; exit 0 ;;
@@ -127,6 +127,9 @@ list_available_launchers() {
 handle_package_operation() {
   local action="$1" system=false with_emu=false option channel="$UNI_CHANNEL" ref="$UNI_REF"
   shift
+  [[ "$action" == update ]] && with_emu=true
+  IUL_MERGE_CONFIG=false
+  IUL_FORCE_CONFIG=false
   while [[ $# -gt 0 ]]; do
     option="$1"; shift
     case "$option" in
@@ -136,6 +139,8 @@ handle_package_operation() {
       --with-installer) : ;; # Kept for compatibility; the installer is always managed.
       --with-emu) with_emu=true ;;
       --all) with_emu=true ;;
+      --merge-config) IUL_MERGE_CONFIG=true ;;
+      --force-config) IUL_FORCE_CONFIG=true ;;
       *) die "unknown $action option: $option" 2 ;;
     esac
   done
@@ -143,6 +148,7 @@ handle_package_operation() {
   configure_deployment_refs "$channel" "$ref"
 
   manage_launcher_package "$action" installer "$system"
+  reload_installed_update_library "$system"
   if [[ "$action" == install ]]; then
     install_uni "$system"
   else

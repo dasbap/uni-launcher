@@ -47,6 +47,7 @@ HOME="$TEST_HOME" INSTALL_UPDATE_REPOSITORY="file://$ROOT/../install-update-laun
 [[ -x "$TEST_HOME/.local/bin/uni" ]] || fail "uni non installe"
 [[ -x "$TEST_HOME/.local/bin/install-update-launcher" ]] || fail "install-update-launcher non installe automatiquement"
 [[ -f "$TEST_HOME/.local/lib/uni/core.bash" ]] || fail "modules non installes"
+[[ -f "$TEST_HOME/.local/lib/uni/deploy.manifest" ]] || fail "manifest de deploiement non installe"
 [[ -f "$TEST_HOME/.local/lib/uni/install-update-launcher.bash" ]] || fail "bibliotheque d'installation partagee non installee"
 [[ -f "$TEST_HOME/.local/share/bash-completion/completions/uni" ]] || fail "completion non installee"
 HOME="$TEST_HOME" "$TEST_HOME/.local/bin/uni" --help >/dev/null
@@ -64,31 +65,34 @@ create_remote() {
 }
 
 UNI_REMOTE="$TMP/uni-remote"
-mkdir -p "$UNI_REMOTE/lib/uni" "$UNI_REMOTE/completions"
+mkdir -p "$UNI_REMOTE/lib/uni" "$UNI_REMOTE/completions" "$UNI_REMOTE/deploy"
 cp "$ROOT/uni" "$UNI_REMOTE/uni"
 cp "$ROOT"/lib/uni/*.bash "$UNI_REMOTE/lib/uni/"
 cp "$ROOT/completions/uni.bash" "$UNI_REMOTE/completions/uni.bash"
+cp "$ROOT/deploy/manifest" "$UNI_REMOTE/deploy/manifest"
 create_remote "$UNI_REMOTE"
 
 EMU_REMOTE="$TMP/emu-remote"
-mkdir -p "$EMU_REMOTE/lib/emu" "$EMU_REMOTE/completions"
+mkdir -p "$EMU_REMOTE/lib/emu" "$EMU_REMOTE/completions" "$EMU_REMOTE/deploy"
 cat > "$EMU_REMOTE/emu" <<'EOF'
 #!/usr/bin/env bash
 echo remote-emu
 EOF
 echo 'remote_emu=true' > "$EMU_REMOTE/lib/emu/core.bash"
 echo 'complete -W help emu' > "$EMU_REMOTE/completions/emu.bash"
+cp "$ROOT/../emu-launcher/deploy/manifest" "$EMU_REMOTE/deploy/manifest"
 chmod +x "$EMU_REMOTE/emu"
 create_remote "$EMU_REMOTE"
 
 INSTALLER_REMOTE="$TMP/installer-remote"
-mkdir -p "$INSTALLER_REMOTE/lib/install-update-launcher"
+mkdir -p "$INSTALLER_REMOTE/lib/install-update-launcher" "$INSTALLER_REMOTE/deploy"
 cat > "$INSTALLER_REMOTE/install-update-launcher" <<'EOF'
 #!/usr/bin/env bash
 echo remote-installer
 EOF
 cp "$ROOT/../install-update-launcher/lib/install-update-launcher/install-update-launcher.bash" \
   "$INSTALLER_REMOTE/lib/install-update-launcher/install-update-launcher.bash"
+cp "$ROOT/../install-update-launcher/deploy/manifest" "$INSTALLER_REMOTE/deploy/manifest"
 chmod +x "$INSTALLER_REMOTE/install-update-launcher"
 create_remote "$INSTALLER_REMOTE"
 
@@ -114,7 +118,7 @@ HOME="$REMOTE_HOME" \
 UNI_REPOSITORY="file://$UNI_REMOTE" \
 EMU_REPOSITORY="file://$EMU_REMOTE" \
 INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
-  "$REMOTE_HOME/.local/bin/uni" --update --channel prerelease --all >/dev/null
+  "$REMOTE_HOME/.local/bin/uni" -u >/dev/null
 [[ -x "$REMOTE_HOME/.local/bin/uni" ]] || fail "uni remote update failed"
 [[ -x "$REMOTE_HOME/.local/bin/emu" ]] || fail "emu was not managed by uni --all"
 [[ -x "$REMOTE_HOME/.local/bin/install-update-launcher" ]] || fail "installer was not managed by uni --all"

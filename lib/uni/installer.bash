@@ -56,6 +56,11 @@ configure_installer_manifest() {
   IUL_COMMAND_NAME="uni"
   IUL_COMMAND_SOURCE="$SCRIPT_DIR/uni"
   IUL_MODULE_SOURCE_DIR="$MODULE_DIR"
+  if [[ -f "$SCRIPT_DIR/deploy/manifest" ]]; then
+    IUL_MANIFEST_SOURCE="$SCRIPT_DIR/deploy/manifest"
+  else
+    IUL_MANIFEST_SOURCE="$MODULE_DIR/deploy.manifest"
+  fi
   if [[ -f "$SCRIPT_DIR/completions/uni.bash" ]]; then
     IUL_COMPLETION_SOURCE="$SCRIPT_DIR/completions/uni.bash"
   elif [[ -f "$HOME/.local/share/bash-completion/completions/uni" ]]; then
@@ -113,4 +118,18 @@ launcher_package_status() {
 
 cleanup_installer_checkout() {
   [[ -z "$INSTALL_UPDATE_CHECKOUT" ]] || rm -rf "$INSTALL_UPDATE_CHECKOUT"
+}
+
+reload_installed_update_library() {
+  local system="$1" library
+  if [[ "$system" == true && -f /usr/local/lib/install-update-launcher/install-update-launcher.bash ]]; then
+    library=/usr/local/lib/install-update-launcher/install-update-launcher.bash
+  elif [[ -f "$HOME/.local/lib/install-update-launcher/install-update-launcher.bash" ]]; then
+    library="$HOME/.local/lib/install-update-launcher/install-update-launcher.bash"
+  elif [[ -f /usr/local/lib/install-update-launcher/install-update-launcher.bash ]]; then
+    library=/usr/local/lib/install-update-launcher/install-update-launcher.bash
+  else
+    return 0
+  fi
+  source "$library"
 }
