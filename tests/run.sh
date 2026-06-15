@@ -122,6 +122,20 @@ INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
 [[ -x "$REMOTE_HOME/.local/bin/uni" ]] || fail "uni remote update failed"
 [[ -x "$REMOTE_HOME/.local/bin/emu" ]] || fail "emu was not managed by uni --all"
 [[ -x "$REMOTE_HOME/.local/bin/install-update-launcher" ]] || fail "installer was not managed by uni --all"
+
+cat >> "$REMOTE_HOME/.local/lib/uni/install-update-launcher.bash" <<'EOF'
+iul_update() {
+  echo "STALE UPDATER USED"
+  return 99
+}
+EOF
+bootstrap_output="$(HOME="$REMOTE_HOME" \
+  UNI_REPOSITORY="file://$UNI_REMOTE" \
+  EMU_REPOSITORY="file://$EMU_REMOTE" \
+  INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
+  "$REMOTE_HOME/.local/bin/uni" -u)"
+[[ "$bootstrap_output" != *"STALE UPDATER USED"* ]] || fail "stale embedded updater was used"
+[[ "$bootstrap_output" != *"Unchanged"* ]] || fail "update output listed unchanged files"
 current_output="$(HOME="$REMOTE_HOME" \
   UNI_REPOSITORY="file://$UNI_REMOTE" \
   EMU_REPOSITORY="file://$EMU_REMOTE" \

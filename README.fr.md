@@ -41,7 +41,7 @@ La bibliothèque peut aussi être sélectionnée avec `INSTALL_UPDATE_LAUNCHER_L
 
 L'installation utilisateur place la commande dans `~/.local/bin/uni`, les modules dans `~/.local/lib/uni` et la complétion Bash dans `~/.local/share/bash-completion/completions/uni`. Elle configure `~/.profile` et `~/.bashrc` sans dupliquer les blocs gérés.
 
-Chaque `uni --install` installe d'abord automatiquement la commande autonome `install-update-launcher`. Chaque `uni --update` la met d'abord à jour. L'outil de déploiement est ainsi réellement disponible dans le `PATH` au lieu d'exister uniquement comme bibliothèque embarquée.
+Chaque `uni --install` installe d'abord automatiquement la commande autonome `install-update-launcher`. Chaque `uni --update` la vérifie d'abord, la met à jour si sa version ou ses fichiers ont changé, puis recharge la bibliothèque installée avant de traiter `uni` et les autres launchers. L'outil de déploiement est ainsi disponible dans le `PATH` et le reste de l'opération utilise la méthode de mise à jour actuelle plutôt qu'une copie embarquée obsolète.
 
 `--with-emu` télécharge et installe également `https://github.com/dasbap/emu-launcher.git`. `--all` installe tous les launchers optionnels actuellement enregistrés par `uni`. Ajoutez `--system` pour utiliser les destinations sous `/usr/local`. L'ancienne option `--with-installer` reste acceptée pour compatibilité mais n'est plus nécessaire.
 

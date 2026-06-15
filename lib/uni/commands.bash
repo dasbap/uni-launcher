@@ -126,7 +126,7 @@ list_available_launchers() {
 
 handle_package_operation() {
   local action="$1" system=false with_emu=false option channel="$UNI_CHANNEL" ref="$UNI_REF"
-  local modern_updater=false
+  local installer_status
   shift
   [[ "$action" == update ]] && with_emu=true
   IUL_MERGE_CONFIG=false
@@ -148,11 +148,27 @@ handle_package_operation() {
 
   configure_deployment_refs "$channel" "$ref"
 
-  declare -F iul_prepare_config_transition >/dev/null 2>&1 && modern_updater=true
-  if [[ "$action" == install || "$modern_updater" == false ]]; then
-    manage_launcher_package "$action" installer "$system" || return $?
-    [[ "$modern_updater" == true ]] || reload_installed_update_library "$system"
+  if [[ "$action" == install ]]; then
+    manage_launcher_package install installer "$system" || return $?
+  else
+    installer_status="$(launcher_package_status installer "$system")"
+    case "$installer_status" in
+      up-to-date)
+        echo "install-update-launcher is already up to date"
+        ;;
+      update-available)
+        manage_launcher_package update installer "$system" || return $?
+        ;;
+      not-installed)
+        manage_launcher_package install installer "$system" || return $?
+        ;;
+      *)
+        die "unable to check install-update-launcher updates" 1
+        ;;
+    esac
   fi
+  reload_installed_update_library "$system"
+
   if [[ "$action" == install ]]; then
     install_uni "$system" || return $?
   else
@@ -160,9 +176,6 @@ handle_package_operation() {
   fi
   if [[ "$with_emu" == true ]]; then
     manage_launcher_package "$action" emu "$system" || return $?
-  fi
-  if [[ "$action" == update && "$modern_updater" == true ]]; then
-    manage_launcher_package update installer "$system" || return $?
   fi
   cleanup_installer_checkout
 }

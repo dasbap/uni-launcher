@@ -134,5 +134,6 @@ reload_installed_update_library() {
   else
     return 0
   fi
+  INSTALL_UPDATE_LAUNCHER_LIB="$library"
   source "$library"
 }
