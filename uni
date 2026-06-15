@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+find_module_dir() {
+  local paired_dir
+  if [[ -n "${UNI_LIB_DIR:-}" && -d "$UNI_LIB_DIR" ]]; then
+    printf '%s\n' "$UNI_LIB_DIR"
+    return 0
+  fi
+  if [[ -d "$SCRIPT_DIR/lib/uni" ]]; then
+    printf '%s\n' "$SCRIPT_DIR/lib/uni"
+    return 0
+  fi
+  paired_dir="$(cd "$SCRIPT_DIR/../lib/uni" 2>/dev/null && pwd)" || paired_dir=""
+  if [[ -n "$paired_dir" && -d "$paired_dir" ]]; then
+    printf '%s\n' "$paired_dir"
+    return 0
+  fi
+  [[ -d "$HOME/.local/lib/uni" ]] && { printf '%s\n' "$HOME/.local/lib/uni"; return 0; }
+  [[ -d /usr/local/lib/uni ]] && { printf '%s\n' /usr/local/lib/uni; return 0; }
+  return 1
+}
+
+MODULE_DIR="$(find_module_dir)" || {
+  echo "Erreur: modules uni introuvables. Reinstallez avec ./uni -i." >&2
+  exit 1
+}
+
+source "$MODULE_DIR/core.bash"
+source "$MODULE_DIR/config.bash"
+source "$MODULE_DIR/launch.bash"
+source "$MODULE_DIR/commands.bash"
+
+uni_main "$@"

@@ -1,0 +1,4 @@
+# Les runners executent un jeu ou un fichier cible.
+emu=emu
+wine=wine
+native=/usr/bin/env
