@@ -126,6 +126,7 @@ list_available_launchers() {
 
 handle_package_operation() {
   local action="$1" system=false with_emu=false option channel="$UNI_CHANNEL" ref="$UNI_REF"
+  local modern_updater=false
   shift
   [[ "$action" == update ]] && with_emu=true
   IUL_MERGE_CONFIG=false
@@ -147,14 +148,20 @@ handle_package_operation() {
 
   configure_deployment_refs "$channel" "$ref"
 
-  manage_launcher_package "$action" installer "$system"
-  reload_installed_update_library "$system"
+  declare -F iul_prepare_config_transition >/dev/null 2>&1 && modern_updater=true
+  if [[ "$action" == install || "$modern_updater" == false ]]; then
+    manage_launcher_package "$action" installer "$system"
+    [[ "$modern_updater" == true ]] || reload_installed_update_library "$system"
+  fi
   if [[ "$action" == install ]]; then
     install_uni "$system"
   else
     update_uni "$system"
   fi
   [[ "$with_emu" == false ]] || manage_launcher_package "$action" emu "$system"
+  if [[ "$action" == update && "$modern_updater" == true ]]; then
+    manage_launcher_package update installer "$system"
+  fi
   cleanup_installer_checkout
 }
 
