@@ -49,4 +49,54 @@ HOME="$TEST_HOME" "$ROOT/uni" --install >/dev/null
 [[ -f "$TEST_HOME/.local/share/bash-completion/completions/uni" ]] || fail "completion non installee"
 HOME="$TEST_HOME" "$TEST_HOME/.local/bin/uni" --help >/dev/null
 
+create_remote() {
+  local directory="$1"
+  git -C "$directory" init -q
+  git -C "$directory" config user.name test
+  git -C "$directory" config user.email test@example.invalid
+  git -C "$directory" add -A
+  git -C "$directory" commit -qm initial
+  git -C "$directory" branch -M main
+}
+
+UNI_REMOTE="$TMP/uni-remote"
+mkdir -p "$UNI_REMOTE/lib/uni" "$UNI_REMOTE/completions"
+cp "$ROOT/uni" "$UNI_REMOTE/uni"
+cp "$ROOT"/lib/uni/*.bash "$UNI_REMOTE/lib/uni/"
+cp "$ROOT/completions/uni.bash" "$UNI_REMOTE/completions/uni.bash"
+create_remote "$UNI_REMOTE"
+
+EMU_REMOTE="$TMP/emu-remote"
+mkdir -p "$EMU_REMOTE/lib/emu" "$EMU_REMOTE/completions"
+cat > "$EMU_REMOTE/emu" <<'EOF'
+#!/usr/bin/env bash
+echo remote-emu
+EOF
+echo 'remote_emu=true' > "$EMU_REMOTE/lib/emu/core.bash"
+echo 'complete -W help emu' > "$EMU_REMOTE/completions/emu.bash"
+chmod +x "$EMU_REMOTE/emu"
+create_remote "$EMU_REMOTE"
+
+INSTALLER_REMOTE="$TMP/installer-remote"
+mkdir -p "$INSTALLER_REMOTE/lib/install-update-launcher"
+cat > "$INSTALLER_REMOTE/install-update-launcher" <<'EOF'
+#!/usr/bin/env bash
+echo remote-installer
+EOF
+cp "$ROOT/../install-update-launcher/lib/install-update-launcher/install-update-launcher.bash" \
+  "$INSTALLER_REMOTE/lib/install-update-launcher/install-update-launcher.bash"
+chmod +x "$INSTALLER_REMOTE/install-update-launcher"
+create_remote "$INSTALLER_REMOTE"
+
+REMOTE_HOME="$TMP/remote-home"; mkdir -p "$REMOTE_HOME"
+HOME="$REMOTE_HOME" "$ROOT/uni" --install >/dev/null
+HOME="$REMOTE_HOME" \
+UNI_REPOSITORY="file://$UNI_REMOTE" \
+EMU_REPOSITORY="file://$EMU_REMOTE" \
+INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
+  "$REMOTE_HOME/.local/bin/uni" --update --all >/dev/null
+[[ -x "$REMOTE_HOME/.local/bin/uni" ]] || fail "uni remote update failed"
+[[ -x "$REMOTE_HOME/.local/bin/emu" ]] || fail "emu was not managed by uni --all"
+[[ -x "$REMOTE_HOME/.local/bin/install-update-launcher" ]] || fail "installer was not managed by uni --all"
+
 echo "All tests passed."

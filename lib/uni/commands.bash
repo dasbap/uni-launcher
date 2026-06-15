@@ -73,12 +73,35 @@ handle_command() {
       [[ -n "${2:-}" ]] || die "Usage: uni --set-emu <command>"
       cfg_set "$RUNNERS_CONFIG" emu "$2"; echo "Runner emu configure -> $2"; exit 0 ;;
     doctor) doctor; exit $? ;;
-    --install|-i) system=false; [[ "${2:-}" == --system ]] && system=true; install_uni "$system"; exit 0 ;;
-    --update) system=false; [[ "${2:-}" == --system ]] && system=true; update_uni "$system"; exit 0 ;;
+    --install|-i) handle_package_operation install "${@:2}"; exit 0 ;;
+    --update) handle_package_operation update "${@:2}"; exit 0 ;;
     --clear-config)
       backup="$CONFIG_DIR/backup.$(date +%s)"; mkdir -p "$backup"; cp "$RUNNERS_CONFIG" "$GAMES_CONFIG" "$backup/"; rm -f "$RUNNERS_CONFIG" "$GAMES_CONFIG"
       echo "Configuration sauvegardee dans $backup puis supprimee"; exit 0 ;;
   esac
+}
+
+handle_package_operation() {
+  local action="$1" system=false with_installer=false with_emu=false option
+  shift
+  for option in "$@"; do
+    case "$option" in
+      --system) system=true ;;
+      --with-installer) with_installer=true ;;
+      --with-emu) with_emu=true ;;
+      --all) with_installer=true; with_emu=true ;;
+      *) die "unknown $action option: $option" 2 ;;
+    esac
+  done
+
+  if [[ "$action" == install ]]; then
+    install_uni "$system"
+  else
+    update_uni "$system"
+  fi
+  [[ "$with_installer" == false ]] || manage_launcher_package "$action" installer "$system"
+  [[ "$with_emu" == false ]] || manage_launcher_package "$action" emu "$system"
+  cleanup_installer_checkout
 }
 
 doctor() {

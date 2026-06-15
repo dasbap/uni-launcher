@@ -6,16 +6,33 @@
 
 L'installation et les mises à jour utilisent le paquet partagé `install-update-launcher`. Pendant le développement, conservez-le dans un dépôt voisin. La commande `uni` installée reçoit une copie de la bibliothèque partagée et reste autonome.
 
+`uni` est le seul projet qui orchestre les autres paquets launcher. `emu-launcher` et `install-update-launcher` n'installent jamais `uni`.
+
 ## Installation
 
 ```bash
 ./uni --install
 # ou : ./uni --install --system
+./uni --install --with-emu
+./uni --install --with-installer
+./uni --install --all
 ```
 
 La bibliothèque peut aussi être sélectionnée avec `INSTALL_UPDATE_LAUNCHER_LIB=/path/to/install-update-launcher.bash` ou installée séparément.
 
 L'installation utilisateur place la commande dans `~/.local/bin/uni`, les modules dans `~/.local/lib/uni` et la complétion Bash dans `~/.local/share/bash-completion/completions/uni`. Elle configure `~/.profile` et `~/.bashrc` sans dupliquer les blocs gérés.
+
+`--with-emu` télécharge et installe `https://github.com/dasbap/emu-launcher.git`. `--with-installer` installe la commande autonome `install-update-launcher`. `--all` active les deux options. Ajoutez `--system` pour utiliser les destinations sous `/usr/local`.
+
+Les mises à jour téléchargent les projets sélectionnés depuis leur branche `main` au lieu d'utiliser les fichiers du checkout courant :
+
+```bash
+uni --update
+uni --update --with-emu
+uni --update --all
+```
+
+Les dépôts et branches peuvent être remplacés avec `UNI_REPOSITORY`, `UNI_REF`, `EMU_REPOSITORY`, `EMU_REF`, `INSTALL_UPDATE_REPOSITORY` et `INSTALL_UPDATE_REF`.
 
 ## Utiliser emu depuis uni
 
@@ -71,6 +88,9 @@ uni doctor
 uni --dry-run <game>
 uni --foreground <game>
 uni --update
+uni --update --with-emu
+uni --update --with-installer
+uni --update --all
 ```
 
 ## Tests

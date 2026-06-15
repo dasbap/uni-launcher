@@ -11,9 +11,27 @@ find_install_update_library() {
   return 1
 }
 
-INSTALL_UPDATE_LIBRARY="$(find_install_update_library)" || \
-  die "install-update-launcher est requis. Gardez son depot a cote de uni-launcher ou installez-le." 1
-source "$INSTALL_UPDATE_LIBRARY"
+UNI_REPOSITORY="${UNI_REPOSITORY:-https://github.com/dasbap/uni-launcher.git}"
+UNI_REF="${UNI_REF:-main}"
+EMU_REPOSITORY="${EMU_REPOSITORY:-https://github.com/dasbap/emu-launcher.git}"
+EMU_REF="${EMU_REF:-main}"
+INSTALL_UPDATE_REPOSITORY="${INSTALL_UPDATE_REPOSITORY:-https://github.com/dasbap/install-update-launcher.git}"
+INSTALL_UPDATE_REF="${INSTALL_UPDATE_REF:-main}"
+INSTALL_UPDATE_CHECKOUT=""
+
+load_install_update_library() {
+  local library
+  if library="$(find_install_update_library)"; then
+    source "$library"
+    return 0
+  fi
+  command -v git >/dev/null 2>&1 || die "git is required to download install-update-launcher" 1
+  INSTALL_UPDATE_CHECKOUT="$(mktemp -d)"
+  git clone --quiet --depth 1 --branch "$INSTALL_UPDATE_REF" \
+    "$INSTALL_UPDATE_REPOSITORY" "$INSTALL_UPDATE_CHECKOUT" || \
+    die "unable to download install-update-launcher" 1
+  source "$INSTALL_UPDATE_CHECKOUT/lib/install-update-launcher/install-update-launcher.bash"
+}
 
 configure_installer_manifest() {
   IUL_PACKAGE_NAME="uni-launcher"
@@ -30,11 +48,34 @@ configure_installer_manifest() {
 }
 
 install_uni() {
+  load_install_update_library
   configure_installer_manifest
   iul_install "$1"
 }
 
 update_uni() {
-  configure_installer_manifest
-  iul_update "$1"
+  load_install_update_library
+  iul_apply_from_git update "$1" "$UNI_REPOSITORY" "$UNI_REF" \
+    uni-launcher uni uni lib/uni completions/uni.bash
+}
+
+manage_launcher_package() {
+  local action="$1" package="$2" system="$3"
+  load_install_update_library
+  case "$package" in
+    emu)
+      iul_apply_from_git "$action" "$system" "$EMU_REPOSITORY" "$EMU_REF" \
+        emu-launcher emu emu lib/emu completions/emu.bash
+      ;;
+    installer)
+      iul_apply_from_git "$action" "$system" "$INSTALL_UPDATE_REPOSITORY" "$INSTALL_UPDATE_REF" \
+        install-update-launcher install-update-launcher install-update-launcher \
+        lib/install-update-launcher ""
+      ;;
+    *) die "unknown launcher package: $package" 2 ;;
+  esac
+}
+
+cleanup_installer_checkout() {
+  [[ -z "$INSTALL_UPDATE_CHECKOUT" ]] || rm -rf "$INSTALL_UPDATE_CHECKOUT"
 }
