@@ -26,7 +26,7 @@ uni launchers --current
 uni launchers --updates
 ```
 
-`--installed` includes both current packages and packages with an available update. Use `--system` to inspect `/usr/local` instead of the user installation. Install missing packages with `uni --install --all` or selected packages with `--with-emu` and `--with-installer`; update installed packages with the matching `uni --update` options.
+`--installed` includes both current packages and packages with an available update. Use `--system` to inspect `/usr/local` instead of the user installation. `install-update-launcher` is always managed by `uni`; install optional missing launchers with `uni --install --all` or `--with-emu`, and update them with the matching `uni --update` options.
 
 ## Installation
 
@@ -34,7 +34,6 @@ uni launchers --updates
 ./uni --install
 # or: ./uni --install --system
 ./uni --install --with-emu
-./uni --install --with-installer
 ./uni --install --all
 ```
 
@@ -42,7 +41,9 @@ The library can also be selected with `INSTALL_UPDATE_LAUNCHER_LIB=/path/to/inst
 
 The user installation places the command in `~/.local/bin/uni`, modules in `~/.local/lib/uni`, and Bash completion in `~/.local/share/bash-completion/completions/uni`. It configures `~/.profile` and `~/.bashrc` without duplicating managed blocks.
 
-`--with-emu` downloads and installs `https://github.com/dasbap/emu-launcher.git`. `--with-installer` installs the standalone `install-update-launcher` command. `--all` enables both options. Add `--system` to use `/usr/local` destinations.
+Every `uni --install` automatically installs the standalone `install-update-launcher` command first. Every `uni --update` updates it first. This guarantees that the deployment tool is available in `PATH` instead of existing only as an embedded library.
+
+`--with-emu` additionally downloads and installs `https://github.com/dasbap/emu-launcher.git`. `--all` installs every optional launcher currently registered by `uni`. Add `--system` to use `/usr/local` destinations. The older `--with-installer` option remains accepted for compatibility but is no longer required.
 
 Updates download the selected projects from the chosen deployment channel instead of using files from the current checkout:
 
@@ -61,7 +62,7 @@ uni --update --channel development --all
 uni --update --ref v1.2.0 --all
 ```
 
-Channels map to `release`, `pre-release`, and `main`. The default is `stable`; `--ref` overrides the channel. During installation, `uni` itself is copied from the current checkout, while `--channel` selects the branch used for packages downloaded through `--with-emu`, `--with-installer`, or `--all`.
+Channels map to `release`, `pre-release`, and `main`. The default is `stable`; `--ref` overrides the channel. During installation, `uni` itself is copied from the current checkout, while `--channel` selects the branch used for `install-update-launcher` and packages downloaded through `--with-emu` or `--all`.
 
 Override repositories or branches with `UNI_REPOSITORY`, `UNI_REF`, `EMU_REPOSITORY`, `EMU_REF`, `INSTALL_UPDATE_REPOSITORY`, and `INSTALL_UPDATE_REF`.
 
@@ -123,7 +124,6 @@ uni --dry-run <game>
 uni --foreground <game>
 uni --update
 uni --update --with-emu
-uni --update --with-installer
 uni --update --all
 uni --update --channel stable --all
 uni --update --ref v1.2.0 --all

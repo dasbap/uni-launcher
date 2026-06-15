@@ -42,8 +42,10 @@ assert_contains "$("$ROOT/uni" --list)" "retro"
 assert_contains "$("$ROOT/uni" doctor)" "OK runner emu"
 
 TEST_HOME="$TMP/home"; mkdir -p "$TEST_HOME"
-HOME="$TEST_HOME" "$ROOT/uni" --install >/dev/null
+HOME="$TEST_HOME" INSTALL_UPDATE_REPOSITORY="file://$ROOT/../install-update-launcher" \
+  "$ROOT/uni" --install >/dev/null
 [[ -x "$TEST_HOME/.local/bin/uni" ]] || fail "uni non installe"
+[[ -x "$TEST_HOME/.local/bin/install-update-launcher" ]] || fail "install-update-launcher non installe automatiquement"
 [[ -f "$TEST_HOME/.local/lib/uni/core.bash" ]] || fail "modules non installes"
 [[ -f "$TEST_HOME/.local/lib/uni/install-update-launcher.bash" ]] || fail "bibliotheque d'installation partagee non installee"
 [[ -f "$TEST_HOME/.local/share/bash-completion/completions/uni" ]] || fail "completion non installee"
@@ -91,15 +93,23 @@ chmod +x "$INSTALLER_REMOTE/install-update-launcher"
 create_remote "$INSTALLER_REMOTE"
 
 REMOTE_HOME="$TMP/remote-home"; mkdir -p "$REMOTE_HOME"
-HOME="$REMOTE_HOME" "$ROOT/uni" --install >/dev/null
+HOME="$REMOTE_HOME" INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
+  "$ROOT/uni" --install >/dev/null
 missing_output="$(HOME="$REMOTE_HOME" \
   UNI_REPOSITORY="file://$UNI_REMOTE" \
   EMU_REPOSITORY="file://$EMU_REMOTE" \
   INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
   "$REMOTE_HOME/.local/bin/uni" launchers --channel prerelease --missing)"
 assert_contains "$missing_output" "emu"
-assert_contains "$missing_output" "install-update-launcher"
 assert_contains "$missing_output" "not-installed"
+[[ "$missing_output" != *"install-update-launcher"* ]] || fail "automatic installer should not be missing"
+installer_current_output="$(HOME="$REMOTE_HOME" \
+  UNI_REPOSITORY="file://$UNI_REMOTE" \
+  EMU_REPOSITORY="file://$EMU_REMOTE" \
+  INSTALL_UPDATE_REPOSITORY="file://$INSTALLER_REMOTE" \
+  "$REMOTE_HOME/.local/bin/uni" launchers --channel prerelease --current)"
+assert_contains "$installer_current_output" "install-update-launcher"
+assert_contains "$installer_current_output" "up-to-date"
 HOME="$REMOTE_HOME" \
 UNI_REPOSITORY="file://$UNI_REMOTE" \
 EMU_REPOSITORY="file://$EMU_REMOTE" \

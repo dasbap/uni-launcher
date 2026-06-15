@@ -26,7 +26,7 @@ uni launchers --current
 uni launchers --updates
 ```
 
-`--installed` inclut les paquets à jour et ceux pour lesquels une mise à jour est disponible. Utilisez `--system` pour inspecter `/usr/local` au lieu de l'installation utilisateur. Installez les paquets manquants avec `uni --install --all` ou sélectionnez-les avec `--with-emu` et `--with-installer`; mettez à jour les paquets installés avec les options correspondantes de `uni --update`.
+`--installed` inclut les paquets à jour et ceux pour lesquels une mise à jour est disponible. Utilisez `--system` pour inspecter `/usr/local` au lieu de l'installation utilisateur. `install-update-launcher` est toujours géré par `uni`; installez les launchers optionnels manquants avec `uni --install --all` ou `--with-emu`, puis mettez-les à jour avec les options correspondantes de `uni --update`.
 
 ## Installation
 
@@ -34,7 +34,6 @@ uni launchers --updates
 ./uni --install
 # ou : ./uni --install --system
 ./uni --install --with-emu
-./uni --install --with-installer
 ./uni --install --all
 ```
 
@@ -42,7 +41,9 @@ La bibliothèque peut aussi être sélectionnée avec `INSTALL_UPDATE_LAUNCHER_L
 
 L'installation utilisateur place la commande dans `~/.local/bin/uni`, les modules dans `~/.local/lib/uni` et la complétion Bash dans `~/.local/share/bash-completion/completions/uni`. Elle configure `~/.profile` et `~/.bashrc` sans dupliquer les blocs gérés.
 
-`--with-emu` télécharge et installe `https://github.com/dasbap/emu-launcher.git`. `--with-installer` installe la commande autonome `install-update-launcher`. `--all` active les deux options. Ajoutez `--system` pour utiliser les destinations sous `/usr/local`.
+Chaque `uni --install` installe d'abord automatiquement la commande autonome `install-update-launcher`. Chaque `uni --update` la met d'abord à jour. L'outil de déploiement est ainsi réellement disponible dans le `PATH` au lieu d'exister uniquement comme bibliothèque embarquée.
+
+`--with-emu` télécharge et installe également `https://github.com/dasbap/emu-launcher.git`. `--all` installe tous les launchers optionnels actuellement enregistrés par `uni`. Ajoutez `--system` pour utiliser les destinations sous `/usr/local`. L'ancienne option `--with-installer` reste acceptée pour compatibilité mais n'est plus nécessaire.
 
 Les mises à jour téléchargent les projets sélectionnés depuis le canal de déploiement choisi au lieu d'utiliser les fichiers du checkout courant :
 
@@ -61,7 +62,7 @@ uni --update --channel development --all
 uni --update --ref v1.2.0 --all
 ```
 
-Les canaux correspondent aux branches `release`, `pre-release` et `main`. Le canal par défaut est `stable`; `--ref` remplace le canal. Pendant l'installation, `uni` est copié depuis le checkout courant, tandis que `--channel` sélectionne la branche des paquets téléchargés avec `--with-emu`, `--with-installer` ou `--all`.
+Les canaux correspondent aux branches `release`, `pre-release` et `main`. Le canal par défaut est `stable`; `--ref` remplace le canal. Pendant l'installation, `uni` est copié depuis le checkout courant, tandis que `--channel` sélectionne la branche d'`install-update-launcher` et des paquets téléchargés avec `--with-emu` ou `--all`.
 
 Les dépôts et branches peuvent être remplacés avec `UNI_REPOSITORY`, `UNI_REF`, `EMU_REPOSITORY`, `EMU_REF`, `INSTALL_UPDATE_REPOSITORY` et `INSTALL_UPDATE_REF`.
 
@@ -123,7 +124,6 @@ uni --dry-run <game>
 uni --foreground <game>
 uni --update
 uni --update --with-emu
-uni --update --with-installer
 uni --update --all
 uni --update --channel stable --all
 uni --update --ref v1.2.0 --all

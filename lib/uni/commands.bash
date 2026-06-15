@@ -125,7 +125,7 @@ list_available_launchers() {
 }
 
 handle_package_operation() {
-  local action="$1" system=false with_installer=false with_emu=false option channel="$UNI_CHANNEL" ref="$UNI_REF"
+  local action="$1" system=false with_emu=false option channel="$UNI_CHANNEL" ref="$UNI_REF"
   shift
   while [[ $# -gt 0 ]]; do
     option="$1"; shift
@@ -133,21 +133,21 @@ handle_package_operation() {
       --system) system=true ;;
       --channel) [[ $# -gt 0 ]] || die "--channel requires a value" 2; channel="$1"; shift ;;
       --ref) [[ $# -gt 0 ]] || die "--ref requires a value" 2; ref="$1"; shift ;;
-      --with-installer) with_installer=true ;;
+      --with-installer) : ;; # Kept for compatibility; the installer is always managed.
       --with-emu) with_emu=true ;;
-      --all) with_installer=true; with_emu=true ;;
+      --all) with_emu=true ;;
       *) die "unknown $action option: $option" 2 ;;
     esac
   done
 
   configure_deployment_refs "$channel" "$ref"
 
+  manage_launcher_package "$action" installer "$system"
   if [[ "$action" == install ]]; then
     install_uni "$system"
   else
     update_uni "$system"
   fi
-  [[ "$with_installer" == false ]] || manage_launcher_package "$action" installer "$system"
   [[ "$with_emu" == false ]] || manage_launcher_package "$action" emu "$system"
   cleanup_installer_checkout
 }
